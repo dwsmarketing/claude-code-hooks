@@ -23,7 +23,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/protect-files.sh\"",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/protect-files.py\"",
             "timeout": 5
           }
         ]
@@ -40,6 +40,16 @@
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/record-bash.py\"",
+            "timeout": 3
+          }
+        ]
+      },
       {
         "matcher": "",
         "hooks": [
@@ -81,7 +91,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/load-handoff.sh\"",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/load-handoff.py\"",
             "timeout": 10
           }
         ]
@@ -91,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/load-learnings.sh\"",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/load-learnings.py\"",
             "timeout": 10
           }
         ]
