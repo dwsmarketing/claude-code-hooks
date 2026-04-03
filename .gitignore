@@ -1,0 +1,43 @@
+# Secrets & credentials
+.env
+.env.*
+*.key
+*.pem
+*.cert
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+credentials.json
+secrets.json
+
+# Machine-specific Claude Code state (do NOT sync)
+settings.local.json
+mcp-needs-auth-cache.json
+
+# Runtime / ephemeral data dirs
+logs/
+cache/
+telemetry/
+statsig/
+sessions/
+handoffs/
+todos/
+plans/
+shell-snapshots/
+backups/
+debug/
+
+# Project-specific data (too large, machine-specific)
+projects/
+
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo

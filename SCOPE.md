@@ -1,8 +1,23 @@
-# Repository Scope — Current State and Strategic Note
+# Repository Scope
 
-## Original Scope
+## Current State (April 2026)
 
-This repository was created as a focused collection of **Claude Code hooks** — scripts wired into the 13 hook event types (PreToolUse, PostToolUse, SessionStart, etc.) to add observability, context persistence, file protection, and agent routing to Claude Code sessions.
+This repository has been expanded from a hooks-only toolkit into a **full Claude Code configuration sync repo**. It now covers everything needed to reproduce a complete Claude Code environment on any machine.
+
+## What's Included
+
+| Component | Type | Location |
+|-----------|------|----------|
+| Hook scripts (`hooks/*.py`) | Claude Code hooks | `~/.claude/hooks/` |
+| Hook config (`settings-hooks.json`) | Hook wiring template | merged into `~/.claude/settings.json` |
+| Slash commands (`commands/`) | Custom `/` commands | `~/.claude/commands/` |
+| Skills (`skills/`) | Installed skill definitions | `~/.claude/skills/` |
+| Agents (`agents/`) | Agent type definitions | `~/.claude/agents/` |
+| Helpers (`helpers/`) | Utility modules and scripts | `~/.claude/helpers/` |
+| Settings template (`settings-template.json`) | Full settings (no secrets) | merged into `~/.claude/settings.json` |
+| CLAUDE.md | Project-level instructions | `~/CLAUDE.md` |
+
+## Original Scope (for reference)
 
 ## Current State (as of April 2026)
 

@@ -1,8 +1,57 @@
 # claude-code-hooks
 
-A portable set of hooks for [Claude Code](https://code.claude.com) that add observability, context persistence, file protection, intelligent agent routing, bash command intelligence recording, syntax validation, git awareness, and session analytics.
+A portable **Claude Code configuration toolkit** for syncing your full Claude Code setup across machines. Includes hooks, slash commands, skills, agents, helpers, and settings — everything needed to reproduce your environment on a new device.
 
-> **Note:** This repository has organically grown to include components beyond hooks (scheduled tasks, infrastructure, dashboard groundwork). See [SCOPE.md](SCOPE.md) for a strategic assessment of the divergence and options for organizing it going forward.
+> **Origin:** Started as a hooks-only repo, now expanded to a full config sync toolkit. See [SCOPE.md](SCOPE.md) for the history.
+
+## Quick Install (new machine)
+
+```bash
+git clone https://github.com/dwsmarketing/claude-code-hooks.git
+cd claude-code-hooks
+bash install.sh
+```
+
+Restart the Claude Desktop App after install. All slash commands, skills, and hooks take effect on the next session.
+
+**Windows:** Use Git Bash to run `install.sh`. Config lands in `%USERPROFILE%\.claude\` (same path as `~/.claude/` in Git Bash).
+
+## Keeping Machines in Sync
+
+```bash
+# After making changes on any machine:
+git add -A && git commit -m "sync: describe what changed" && git push
+
+# On the other machine:
+git pull && bash install.sh
+```
+
+## What's Included
+
+### Slash Commands (`commands/`)
+
+Organized into categories — invoke with `/category/command-name` or just `/command-name`:
+
+| Category | Commands |
+|----------|----------|
+| `analysis/` | bottleneck-detect, token-efficiency, performance-report, token-usage |
+| `automation/` | auto-agent, self-healing, session-memory, smart-agents, smart-spawn, workflow-select |
+| `github/` | code-review, pr-manager, issue-tracker, release-manager, repo-architect, and 15 more |
+| `sparc/` | Full SPARC methodology suite (34 agents) |
+| `monitoring/` | Swarm monitoring |
+| `hooks/` | Hook lifecycle management |
+| `optimization/` | Parallel execution, topology, cache |
+| `remote-access.md` | Claude mobile **Dispatch** setup guide |
+
+### Skills (`skills/`)
+
+34 installed skills covering architecture, DevOps, GitHub workflows, swarm coordination, memory, security, and more. Invoked via `/skill-name`.
+
+### Agents (`agents/`)
+
+25 agent category directories (150+ agent definitions) including SPARC methodology, GitHub, consensus, performance, security, and specialized agents.
+
+### Hooks (`hooks/`)
 
 ## What's Included
 

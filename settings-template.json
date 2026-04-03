@@ -1,0 +1,510 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" pre-bash'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" pre-edit'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/protect-files.py\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" post-edit'",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/validate-syntax.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/record-bash.py\"",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" route'",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/suggest-agents.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" session-restore'",
+            "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/auto-memory-hook.mjs\" import'",
+            "timeout": 8000
+          }
+        ]
+      },
+      {
+        "matcher": "compact|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/load-handoff.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "startup|compact|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/load-learnings.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/cleanup.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/git-context.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" session-end'",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/auto-memory-hook.mjs\" sync'",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/session-stats.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" compact-manual'"
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" session-end'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" compact-auto'"
+          },
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" session-end'",
+            "timeout": 6000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "The conversation is about to be compacted. Before context is lost, extract and save session state by writing THREE files. Use the Write tool for each. Resolve $HOME to the user's home directory for all paths.\n\n1. HANDOFF file at: $HOME/.claude/handoffs/handoff-{YYYYMMDD-HHMMSS}.md (use current timestamp)\n   Contents:\n   # Session Handoff - {timestamp}\n   ## Current Goal\n   {what was being worked on}\n   ## Work Completed\n   {bullet list of what was done and files modified}\n   ## Decisions Made\n   {key decisions and their rationale}\n   ## Open Tasks / Blockers\n   {anything unfinished or blocked}\n   ## Key Context\n   {critical context the next session segment needs}\n\n2. SESSION SUMMARY at: $HOME/.claude/docs/sessions/{YYYYMMDD-HHMMSS}.md\n   Contents:\n   # Session Summary - {timestamp}\n   ## What Was Accomplished\n   {1-3 paragraph summary}\n   ## Files Changed\n   {bullet list with created/modified/deleted}\n   ## Errors Encountered\n   {errors and how they were resolved}\n   ## Outcome\n   {completed/partial/ongoing}\n\n3. APPEND to: $HOME/.claude/docs/pending-learnings.md\n   If the file exists, read it first and append. If not, create it.\n   Append a new section:\n   ## {timestamp}\n   {bullet list of learnings: patterns discovered, user preferences observed, corrections received, anything worth remembering long-term}\n   Source: {brief description of what this session was about}\n   ---\n\nCreate any missing directories. Use forward slashes in all paths.",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" status'",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" post-task'",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/hook-handler.cjs\" notify'",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__NOTIFY_COMMAND__",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "sh -c 'exec node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/statusline.cjs\"'"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx @claude-flow*)",
+      "Bash(npx claude-flow*)",
+      "Bash(node .claude/*)",
+      "mcp__claude-flow__:*"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: claude-flow <ruv@ruv.net>",
+    "pr": "\ud83e\udd16 Generated with [claude-flow](https://github.com/ruvnet/claude-flow)"
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_FLOW_V3_ENABLED": "true",
+    "CLAUDE_FLOW_HOOKS_ENABLED": "true"
+  },
+  "claudeFlow": {
+    "version": "3.0.0",
+    "enabled": true,
+    "platform": {
+      "os": "__OS__",
+      "arch": "__ARCH__",
+      "shell": "__SHELL__"
+    },
+    "modelPreferences": {
+      "default": "claude-opus-4-6",
+      "routing": "claude-haiku-4-5-20251001"
+    },
+    "agentTeams": {
+      "enabled": true,
+      "teammateMode": "auto",
+      "taskListEnabled": true,
+      "mailboxEnabled": true,
+      "coordination": {
+        "autoAssignOnIdle": true,
+        "trainPatternsOnComplete": true,
+        "notifyLeadOnComplete": true,
+        "sharedMemoryNamespace": "agent-teams"
+      },
+      "hooks": {
+        "teammateIdle": {
+          "enabled": true,
+          "autoAssign": true,
+          "checkTaskList": true
+        },
+        "taskCompleted": {
+          "enabled": true,
+          "trainPatterns": true,
+          "notifyLead": true
+        }
+      }
+    },
+    "swarm": {
+      "topology": "hierarchical-mesh",
+      "maxAgents": 15
+    },
+    "memory": {
+      "backend": "hybrid",
+      "enableHNSW": true,
+      "learningBridge": {
+        "enabled": true
+      },
+      "memoryGraph": {
+        "enabled": true
+      },
+      "agentScopes": {
+        "enabled": true
+      }
+    },
+    "neural": {
+      "enabled": true
+    },
+    "daemon": {
+      "autoStart": true,
+      "workers": [
+        "map",
+        "audit",
+        "optimize",
+        "consolidate",
+        "testgaps",
+        "ultralearn",
+        "deepdive",
+        "document",
+        "refactor",
+        "benchmark"
+      ],
+      "schedules": {
+        "audit": {
+          "interval": "1h",
+          "priority": "critical"
+        },
+        "optimize": {
+          "interval": "30m",
+          "priority": "high"
+        },
+        "consolidate": {
+          "interval": "2h",
+          "priority": "low"
+        },
+        "document": {
+          "interval": "1h",
+          "priority": "normal",
+          "triggers": [
+            "adr-update",
+            "api-change"
+          ]
+        },
+        "deepdive": {
+          "interval": "4h",
+          "priority": "normal",
+          "triggers": [
+            "complex-change"
+          ]
+        },
+        "ultralearn": {
+          "interval": "1h",
+          "priority": "normal"
+        }
+      }
+    },
+    "learning": {
+      "enabled": true,
+      "autoTrain": true,
+      "patterns": [
+        "coordination",
+        "optimization",
+        "prediction"
+      ],
+      "retention": {
+        "shortTerm": "24h",
+        "longTerm": "30d"
+      }
+    },
+    "adr": {
+      "autoGenerate": true,
+      "directory": "/docs/adr",
+      "template": "madr"
+    },
+    "ddd": {
+      "trackDomains": true,
+      "validateBoundedContexts": true,
+      "directory": "/docs/ddd"
+    },
+    "security": {
+      "autoScan": true,
+      "scanOnEdit": true,
+      "cveCheck": true,
+      "threatModel": true
+    }
+  }
+}
