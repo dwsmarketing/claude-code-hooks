@@ -17,7 +17,6 @@ def main():
         print("Context was compacted. Re-read CLAUDE.md and MEMORY.md before continuing.")
         sys.exit(0)
 
-    # Find most recent handoff file (filenames include timestamps, so sort = chrono order)
     pattern = os.path.join(handoff_dir, "handoff-*.md")
     files = sorted(glob.glob(pattern), reverse=True)
 
@@ -26,7 +25,6 @@ def main():
         sys.exit(0)
 
     latest = files[0]
-
     try:
         with open(latest, encoding="utf-8") as f:
             content = f.read()

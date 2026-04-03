@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Analyzes user prompts and suggests agent teams/parallel execution for complex tasks."""
 
 import sys

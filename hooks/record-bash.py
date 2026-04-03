@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """PostToolUse: Bash hook — records executed commands to pending-insights.jsonl
-so intelligence.cjs consolidate() can surface frequently-run commands in the graph.
-
-Works on macOS, Linux, and Windows (Python 3.8+).
-"""
+so intelligence.cjs consolidate() can surface frequently-run commands in the graph."""
 
 import json
 import os
 import sys
 import time
+
+DATA_DIR = os.path.join(os.getcwd(), ".claude-flow", "data")
+PENDING_PATH = os.path.join(DATA_DIR, "pending-insights.jsonl")
 
 
 def main():
@@ -31,18 +31,14 @@ def main():
     if len(cmd) < 3:
         sys.exit(0)
 
-    # Normalize: collapse internal newlines/extra whitespace
+    # Normalize: strip leading/trailing whitespace, collapse internal newlines
     cmd = " ".join(cmd.split())
 
     # Truncate very long commands to keep the graph readable
     if len(cmd) > 120:
-        cmd = cmd[:120] + "\u2026"
+        cmd = cmd[:120] + "…"
 
-    # Write to project-local pending-insights.jsonl (same file recordEdit uses)
-    data_dir = os.path.join(os.getcwd(), ".claude-flow", "data")
-    pending_path = os.path.join(data_dir, "pending-insights.jsonl")
-
-    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(DATA_DIR, exist_ok=True)
 
     entry = json.dumps({
         "type": "command",
@@ -52,7 +48,7 @@ def main():
         "cwd": data.get("cwd") or os.getcwd(),
     })
 
-    with open(pending_path, "a", encoding="utf-8") as f:
+    with open(PENDING_PATH, "a", encoding="utf-8") as f:
         f.write(entry + "\n")
 
 
