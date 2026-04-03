@@ -1,0 +1,203 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__NOTIFY_COMMAND__",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/protect-files.sh\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/load-handoff.sh\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "startup|compact|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/.claude/hooks/load-learnings.sh\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/suggest-agents.py\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "The conversation is about to be compacted. Before context is lost, extract and save session state by writing THREE files. Use the Write tool for each. Resolve $HOME to the user's home directory for all paths.\n\n1. HANDOFF file at: $HOME/.claude/handoffs/handoff-{YYYYMMDD-HHMMSS}.md (use current timestamp)\n   Contents:\n   # Session Handoff - {timestamp}\n   ## Current Goal\n   {what was being worked on}\n   ## Work Completed\n   {bullet list of what was done and files modified}\n   ## Decisions Made\n   {key decisions and their rationale}\n   ## Open Tasks / Blockers\n   {anything unfinished or blocked}\n   ## Key Context\n   {critical context the next session segment needs}\n\n2. SESSION SUMMARY at: $HOME/.claude/docs/sessions/{YYYYMMDD-HHMMSS}.md\n   Contents:\n   # Session Summary - {timestamp}\n   ## What Was Accomplished\n   {1-3 paragraph summary}\n   ## Files Changed\n   {bullet list with created/modified/deleted}\n   ## Errors Encountered\n   {errors and how they were resolved}\n   ## Outcome\n   {completed/partial/ongoing}\n\n3. APPEND to: $HOME/.claude/docs/pending-learnings.md\n   If the file exists, read it first and append. If not, create it.\n   Append a new section:\n   ## {timestamp}\n   {bullet list of learnings: patterns discovered, user preferences observed, corrections received, anything worth remembering long-term}\n   Source: {brief description of what this session was about}\n   ---\n\nCreate any missing directories. Use forward slashes in all paths.",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PermissionRequest\", \"decision\": {\"behavior\": \"allow\"}}}'",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
