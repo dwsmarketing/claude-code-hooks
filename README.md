@@ -2,6 +2,8 @@
 
 A portable set of hooks for [Claude Code](https://code.claude.com) that add observability, context persistence, file protection, intelligent agent routing, bash command intelligence recording, syntax validation, git awareness, and session analytics.
 
+> **Note:** This repository has organically grown to include components beyond hooks (scheduled tasks, infrastructure, dashboard groundwork). See [SCOPE.md](SCOPE.md) for a strategic assessment of the divergence and options for organizing it going forward.
+
 ## What's Included
 
 | Hook | Event | What It Does |

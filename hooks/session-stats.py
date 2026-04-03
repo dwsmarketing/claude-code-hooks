@@ -115,7 +115,7 @@ def main():
     if subagents:
         parts.append(f"{subagents} subagents")
     if failures:
-        parts.append(f"⚠ {failures} failures")
+        parts.append(f"[!] {failures} failures")
     if files_modified:
         sample = ", ".join(sorted(files_modified)[:4])
         extra = f" +{len(files_modified)-4} more" if len(files_modified) > 4 else ""
