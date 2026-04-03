@@ -41,6 +41,16 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/validate-syntax.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
@@ -79,6 +89,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/session-stats.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",
             "timeout": 5
           }
@@ -109,6 +124,16 @@
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/cleanup.py\"",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "__PYTHON__ \"$HOME/.claude/hooks/git-context.py\"",
+            "timeout": 10
+          },
           {
             "type": "command",
             "command": "__PYTHON__ \"$HOME/.claude/hooks/log-event.py\"",

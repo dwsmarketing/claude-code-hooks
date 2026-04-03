@@ -1,15 +1,19 @@
 # claude-code-hooks
 
-A portable set of hooks for [Claude Code](https://code.claude.com) that add observability, context persistence, file protection, intelligent agent routing, and bash command intelligence recording.
+A portable set of hooks for [Claude Code](https://code.claude.com) that add observability, context persistence, file protection, intelligent agent routing, bash command intelligence recording, syntax validation, git awareness, and session analytics.
 
 ## What's Included
 
 | Hook | Event | What It Does |
 |------|-------|-------------|
 | **Desktop Notifications** | Notification | Native OS alert when Claude needs your attention |
-| **Protected Files** | PreToolUse (Edit\|Write) | Blocks edits to `.env`, credentials, keys, lock files |
-| **Observability Logger** | All event types | Appends every hook event to a structured JSONL log |
+| **Protected Files** | PreToolUse (Edit\|Write) | Blocks edits to `.env`, credentials, keys, lock files; scans content for secrets |
+| **Observability Logger** | All event types | Appends every hook event to a structured JSONL log with enriched metadata |
+| **Syntax Validator** | PostToolUse (Write\|Edit\|MultiEdit) | Catches Python, JSON, and TOML syntax errors immediately after writes |
 | **Bash Command Recorder** | PostToolUse (Bash) | Records executed commands for the intelligence graph |
+| **Session Stats** | Stop | Prints per-session summary; writes structured stats; rotates large log files |
+| **Git Context** | SessionStart | Injects current branch, status, and recent commits into Claude's context |
+| **File Cleanup** | SessionStart | Prunes old handoff and session files on a configurable retention schedule |
 | **Handoff System** | PreCompact + SessionStart | Saves session state before compaction, restores it after |
 | **Session Summaries** | PreCompact | Writes a summary of each session segment to disk |
 | **Pending Learnings** | PreCompact + SessionStart | Extracts learnings and surfaces them for review |
@@ -47,10 +51,10 @@ Hooks take effect on your next Claude Code session.
 
 ### Observability
 
-Every hook event is logged to `~/.claude/logs/hook-events.jsonl` as one JSON line:
+Every hook event is logged to `~/.claude/logs/hook-events.jsonl` as one JSON line with enriched metadata:
 
 ```json
-{"timestamp":"2026-04-03T14:22:01.003Z","event":"PreToolUse","session_id":"abc123","data":{...}}
+{"timestamp":"2026-04-03T14:22:01.003Z","event":"PostToolUse","session_id":"abc123","tool_name":"Bash","tool_command":"npm run build","data":{...}}
 ```
 
 Query with standard tools:
@@ -67,6 +71,27 @@ print(dict(c))
 # Last 10 events
 tail -10 ~/.claude/logs/hook-events.jsonl | python3 -m json.tool
 ```
+
+At session end, `session-stats.py` prints a one-line summary and writes to `~/.claude/logs/session-summaries.jsonl`. Log files are auto-rotated when they exceed 5 MB.
+
+### Syntax Validation
+
+After every file write or edit, `validate-syntax.py` checks the file for syntax errors:
+
+- **`.py`** — validated with Python's built-in `py_compile`
+- **`.json`** — validated with `json.load`
+- **`.toml`** — validated with `tomllib` (Python 3.11+) or `tomli` if installed
+
+Syntax errors are fed back to Claude immediately so they can be fixed in the same turn.
+
+### Git Context
+
+At every session start, `git-context.py` injects:
+- Current branch name and repo name
+- Uncommitted file count (if any)
+- Last 3 commit messages
+
+Output is only shown when inside a git repository. Exits silently otherwise.
 
 ### Bash Command Intelligence
 
@@ -93,6 +118,20 @@ On the next session start (or after compaction), the **SessionStart** hooks:
 - Load the latest handoff into Claude's context
 - Surface any pending learnings for review
 
+Old handoffs are pruned after 7 days; session summaries after 30 days (configurable via env vars — see `cleanup.py`).
+
+### File Protection
+
+Blocks Claude from editing sensitive files (path-based):
+- `.env`, `.gitignore`
+- `package-lock.json`, `yarn.lock`
+- Private keys (`.key`, `.pem`, `.cert`, `id_rsa`, `id_ed25519`)
+- Files matching `secrets` or `credentials`
+
+Also scans the **content** being written for credential patterns including cloud provider keys, VCS tokens, API key assignments, and private key headers. Security events are logged to `~/.claude/logs/security-events.jsonl`.
+
+When blocked, Claude receives feedback explaining why and is asked to get explicit user permission.
+
 ### Agent Team Suggestions
 
 The `suggest-agents.py` hook analyzes each user prompt for complexity signals:
@@ -106,22 +145,12 @@ The `suggest-agents.py` hook analyzes each user prompt for complexity signals:
 | Direct request | auto | "use parallel agents", "agent teams" |
 
 At 3+ points, it suggests specific approaches:
-- **Debug tasks** → `/team-debug` (parallel hypothesis testing)
-- **Review tasks** → `/team-review` (multi-dimensional review)
-- **Feature tasks** → `/team-feature` (parallel development)
-- **Refactor tasks** → parallel subagents with file ownership
+- **Debug tasks** — parallel hypothesis testing
+- **Review tasks** — multi-dimensional review
+- **Feature tasks** — parallel development
+- **Refactor tasks** — parallel subagents with file ownership
 
 Simple prompts produce no output.
-
-### File Protection
-
-Blocks Claude from editing sensitive files:
-- `.env`, `.gitignore`
-- `package-lock.json`, `yarn.lock`
-- Private keys (`.key`, `.pem`, `.cert`, `id_rsa`, `id_ed25519`)
-- Files matching `secrets` or `credentials`
-
-When blocked, Claude receives feedback explaining why and is asked to get explicit user permission.
 
 ## Platform Compatibility
 
@@ -135,6 +164,10 @@ All hook scripts in this repo are Python 3. The `.sh` files are included as refe
 | `load-handoff.py` | ✅ | ✅ | ✅ | ✅ |
 | `load-learnings.py` | ✅ | ✅ | ✅ | ✅ |
 | `record-bash.py` | ✅ | ✅ | ✅ | ✅ |
+| `validate-syntax.py` | ✅ | ✅ | ✅ | ✅ |
+| `session-stats.py` | ✅ | ✅ | ✅ | ✅ |
+| `git-context.py` | ✅ | ✅ | ✅ | ✅ |
+| `cleanup.py` | ✅ | ✅ | ✅ | ✅ |
 | `*.sh` files | ✅ | ✅ | ✅ | ❌ (need bash) |
 
 ## File Structure
@@ -142,22 +175,29 @@ All hook scripts in this repo are Python 3. The `.sh` files are included as refe
 ```
 ~/.claude/
   hooks/
-    protect-files.py       # File edit blocker (cross-platform)
+    protect-files.py       # File edit blocker + secret scanner (cross-platform)
     protect-files.sh       # File edit blocker (bash alternative)
-    log-event.py           # JSONL event logger
+    log-event.py           # JSONL event logger with enriched metadata
     load-handoff.py        # Handoff context loader (cross-platform)
     load-handoff.sh        # Handoff context loader (bash alternative)
     load-learnings.py      # Pending learnings surfacer (cross-platform)
     load-learnings.sh      # Pending learnings surfacer (bash alternative)
     suggest-agents.py      # Agent team suggester
     record-bash.py         # Bash command intelligence recorder
+    validate-syntax.py     # Post-write syntax validator (.py, .json, .toml)
+    session-stats.py       # Session stats + log rotation (runs at Stop)
+    git-context.py         # Git branch/status context injector (SessionStart)
+    cleanup.py             # Stale file pruner (SessionStart + nightly)
   logs/
-    hook-events.jsonl      # Event log (auto-created)
+    hook-events.jsonl      # Event log (auto-created, rotated at 5MB)
+    session-summaries.jsonl # Per-session stats (auto-created)
+    security-events.jsonl  # Blocked edits and credential detections (auto-created)
+    maintenance.jsonl      # Cleanup and nightly task runs (auto-created)
   handoffs/
-    handoff-*.md           # Session handoffs (auto-created)
+    handoff-*.md           # Session handoffs (pruned after 7 days)
   docs/
     sessions/
-      *.md                 # Session summaries (auto-created)
+      *.md                 # Session summaries (pruned after 30 days)
     pending-learnings.md   # Learning candidates (auto-created)
   settings.json            # Claude Code settings (hooks merged here)
 
@@ -170,7 +210,15 @@ All hook scripts in this repo are Python 3. The `.sh` files are included as refe
 
 ### Add protected file patterns
 
-Edit `~/.claude/hooks/protect-files.py` and add patterns to the `PROTECTED_PATTERNS` list.
+Edit `~/.claude/hooks/protect-files.py` and add patterns to the `PROTECTED_PATH_PATTERNS` list.
+
+### Adjust file retention periods
+
+Set environment variables before the session, or configure them in your shell profile:
+```bash
+export CLAUDE_HANDOFF_RETENTION_DAYS=14   # default: 7
+export CLAUDE_SESSION_RETENTION_DAYS=60   # default: 30
+```
 
 ### Adjust agent suggestion sensitivity
 
@@ -186,7 +234,7 @@ Remove or comment out entries in the `hooks` section of `~/.claude/settings.json
 
 ```bash
 # Remove hook scripts
-rm ~/.claude/hooks/{protect-files.py,protect-files.sh,log-event.py,load-handoff.py,load-handoff.sh,load-learnings.py,load-learnings.sh,suggest-agents.py,record-bash.py}
+rm ~/.claude/hooks/{protect-files.py,protect-files.sh,log-event.py,load-handoff.py,load-handoff.sh,load-learnings.py,load-learnings.sh,suggest-agents.py,record-bash.py,validate-syntax.py,session-stats.py,git-context.py,cleanup.py}
 
 # Remove the hooks key from settings.json
 python3 -c "
